@@ -4,8 +4,10 @@ import {
   ThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
+import { Stack , router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { Platform, TouchableOpacity, Text } from "react-native";
+
 import "react-native-reanimated";
 import "./globals.css";
 
@@ -19,7 +21,6 @@ export default function RootLayout() {
   });
 
   if (!loaded) {
-    // Async font loading only occurs in development.
     return null;
   }
 
@@ -27,7 +28,51 @@ export default function RootLayout() {
     <AuthProvider>
       <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
         <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false, title: 'Home' }} />
+          <Stack.Screen 
+            name="friends" 
+            options={{
+              title: 'Friends',
+              headerBackTitle: '',
+              headerLeft: Platform.OS === 'ios' ? () => (
+                <TouchableOpacity 
+                  onPress={() => router.back()}
+                  style={{ paddingLeft: 16, paddingRight: 8, paddingVertical: 8 }}
+                >
+                  <Text style={{ fontSize: 28, color: '#000', fontWeight: '300' }}>←</Text>
+                </TouchableOpacity>
+              ) : undefined,
+              headerStyle: {
+                backgroundColor: '#F9F9F9',
+              },
+              headerTintColor: '#000',
+              headerTitleStyle: {
+                fontWeight: 'bold',
+              },
+            }} 
+          />
+          <Stack.Screen 
+            name="chat" 
+            options={{
+              title: 'Chat',
+              headerBackTitle: '',
+              headerLeft: Platform.OS === 'ios' ? () => (
+                <TouchableOpacity 
+                  onPress={() => router.back()}
+                  style={{ paddingLeft: 16, paddingRight: 8, paddingVertical: 8 }}
+                >
+                  <Text style={{ fontSize: 28, color: '#000', fontWeight: '300' }}>←</Text>
+                </TouchableOpacity>
+              ) : undefined,
+              headerStyle: {
+                backgroundColor: '#F9F9F9',
+              },
+              headerTintColor: '#000',
+              headerTitleStyle: {
+                fontWeight: 'bold',
+              },
+            }} 
+          />
           <Stack.Screen name="+not-found" />
         </Stack>
         <StatusBar style="auto" />

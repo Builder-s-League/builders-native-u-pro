@@ -1,9 +1,14 @@
 import AuthScreen from "@/components/AuthScreen";
 import { useAuth } from "@/contexts/AuthContext";
-import { ActivityIndicator, Text, View } from "react-native";
+import { router } from "expo-router";
+import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 
 export default function HomeScreen() {
   const { user, loading } = useAuth();
+
+  const handleFriendsPress = () => {
+    router.push('/friends');
+  };
 
   if (loading) {
     return (
@@ -32,6 +37,23 @@ export default function HomeScreen() {
             {user.email}
           </Text>
         </View>
+        
+        {/* Friends Button */}
+        <TouchableOpacity
+          onPress={handleFriendsPress}
+          className="w-full bg-green-500 py-4 rounded-full mb-6 shadow-lg"
+          style={{
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.3,
+            shadowRadius: 6,
+            elevation: 8,
+          }}
+        >
+          <Text className="text-white text-lg font-semibold text-center">
+            Friends Menu
+          </Text>
+        </TouchableOpacity>
         
         <Text className="text-center text-gray-500 text-sm">
           Check out the Profile tab to manage your account
