@@ -4,9 +4,9 @@ import {
   ThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Stack , router } from "expo-router";
+import { Stack, router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { Platform, TouchableOpacity, Text } from "react-native";
+import { Platform, Text, TouchableOpacity } from "react-native";
 
 import "react-native-reanimated";
 import "./globals.css";
