@@ -1,9 +1,30 @@
 import React, { useState } from "react";
-import { KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View, Alert } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  Alert,
+  Image,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../contexts/AuthContext";
-import { router } from "expo-router"; 
+import { router } from "expo-router";
 
 type AuthMode = "signin" | "signup";
+
+const BRAND_PURPLE = "#5B3DF8";
+const cardShadow = Platform.select({
+  ios: {
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 },
+  },
+  android: { elevation: 8 },
+});
 
 const AuthScreen: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -20,9 +41,7 @@ const AuthScreen: React.FC = () => {
       Alert.alert("Error", "Please fill in all fields");
       return;
     }
-
     setLoading(true);
-
     try {
       if (mode === "signin") {
         const { error } = await signIn(email, password);
@@ -42,91 +61,120 @@ const AuthScreen: React.FC = () => {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="flex-1 justify-center px-6 bg-gray-50"
+      className="flex-1 bg-white px-6"
     >
-      <View className="p-8 bg-white rounded-lg shadow-lg">
-        <Text className="mb-8 text-3xl font-bold text-center text-gray-800">
-          {mode === "signin" ? "Welcome" : "Create Account"}
-        </Text>
+      <View className="absolute top-12 left-6 z-10">
+        <TouchableOpacity onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={24} color="black" />
+        </TouchableOpacity>
+      </View>
 
-        <View className="mb-4">
-          <Text className="mb-2 font-medium text-gray-700">Email</Text>
-          <TextInput
-            className="px-4 py-3 text-gray-800 rounded-lg border border-gray-300"
-            placeholder="Enter your email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
+      <View className="flex-1 justify-center items-center pb-6">
+        <View className="items-center mb-6">
+          <Image
+            source={require("../assets/images/logo.png")}
+            className="w-36 h-36"
+            resizeMode="contain"
           />
         </View>
 
+        <View
+          className="w-full rounded-3xl bg-white p-6"
+          style={cardShadow as any}
+        >
+          <View className="mb-4">
+            <Text className="mb-2 text-gray-700">Email</Text>
+            <TextInput
+              className="px-4 py-3 rounded-xl bg-gray-100 border border-gray-200 text-gray-900"
+              placeholder="Enter your email"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+          </View>
+
+          <View className="mb-6">
+            <Text className="mb-2 text-gray-700">Password</Text>
+            <TextInput
+              className="px-4 py-3 rounded-xl bg-gray-100 border border-gray-200 text-gray-900"
+              placeholder="Enter your password"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+          </View>
+
+          <TouchableOpacity
+            className={`py-4 rounded-full mb-3 ${loading ? "opacity-60" : ""}`}
+            onPress={handleAuth}
+            disabled={loading}
+            style={{ backgroundColor: BRAND_PURPLE }}
+          >
+            <Text className="text-base font-semibold text-center text-white">
+              {loading ? "Loading..." : "sign in"}
+            </Text>
+          </TouchableOpacity>
+
+          {mode === "signin" && (
+            <TouchableOpacity
+              className="py-2"
+              onPress={() => router.push("/forgot-password")}
+            >
+              <Text className="text-center text-gray-600">Forgot password</Text>
+            </TouchableOpacity>
+          )}
+
+          <TouchableOpacity
+            className="py-2"
+            onPress={() => setMode(mode === "signin" ? "signup" : "signin")}
+          >
+            <Text className="text-center text-gray-500">
+              {mode === "signin"
+                ? "Don't have an account? Sign up"
+                : "Already have an account? Sign in"}
+            </Text>
+          </TouchableOpacity>
+        </View>
         {mode === "signup" && (
-          <>
-            <View className="mb-6">
-              <Text className="mb-2 font-medium text-gray-700">First Name</Text>
+          <View className="mt-4">
+            <View className="mb-4">
+              <Text className="mb-2 text-gray-700">First Name</Text>
               <TextInput
-                className="px-4 py-3 text-gray-800 rounded-lg border border-gray-300"
+                className="px-4 py-3 rounded-xl bg-gray-100 border border-gray-200 text-gray-900"
                 placeholder="First Name"
                 value={firstName}
                 onChangeText={setFirstName}
-                autoCapitalize="none"
+                autoCapitalize="words"
                 autoCorrect={false}
               />
             </View>
-            <View className="mb-6">
-              <Text className="mb-2 font-medium text-gray-700">Last Name</Text>
+            <View className="mb-2">
+              <Text className="mb-2 text-gray-700">Last Name</Text>
               <TextInput
-                className="px-4 py-3 text-gray-800 rounded-lg border border-gray-300"
+                className="px-4 py-3 rounded-xl bg-gray-100 border border-gray-200 text-gray-900"
                 placeholder="Last Name"
                 value={lastName}
                 onChangeText={setLastName}
-                autoCapitalize="none"
+                autoCapitalize="words"
                 autoCorrect={false}
               />
             </View>
-          </>
-        )}
 
-        <View className="mb-6">
-          <Text className="mb-2 font-medium text-gray-700">Password</Text>
-          <TextInput
-            className="px-4 py-3 text-gray-800 rounded-lg border border-gray-300"
-            placeholder="Enter your password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-        </View>
-
-        <TouchableOpacity
-          className={`py-4 rounded-lg mb-4 ${loading ? "bg-gray-400" : "bg-blue-600"}`}
-          onPress={handleAuth}
-          disabled={loading}
-        >
-          <Text className="text-lg font-semibold text-center text-white">
-            {loading ? "Loading..." : mode === "signin" ? "Sign In" : "Sign Up"}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          className="py-3 mb-4"
-          onPress={() => setMode(mode === "signin" ? "signup" : "signin")}
-        >
-          <Text className="font-medium text-center text-blue-600">
-            {mode === "signin"
-              ? "Don't have an account? Sign up"
-              : "Already have an account? Sign in"}
-          </Text>
-        </TouchableOpacity>
-
-        {mode === "signin" && (
-          <TouchableOpacity className="py-2" onPress={() => router.push("/forgot-password")}>
-            <Text className="text-center text-gray-600">Forgot your password?</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              className={`py-4 rounded-full mt-4 ${loading ? "opacity-60" : ""}`}
+              onPress={handleAuth}
+              disabled={loading}
+              style={{ backgroundColor: BRAND_PURPLE }}
+            >
+              <Text className="text-base font-semibold text-center text-white">
+                {loading ? "Loading..." : "sign up"}
+              </Text>
+            </TouchableOpacity>
+          </View>
         )}
       </View>
     </KeyboardAvoidingView>
