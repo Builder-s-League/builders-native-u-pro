@@ -14,9 +14,9 @@ export default function SelectUserType() {
   return (
     <View style={{ padding: 20 }}>
       <Text style={{ fontSize: 18, marginBottom: 10 }}>Select User Type:</Text>
-      <Button title="Guardian" onPress={() => onSelect("parent")} />
-      <Button title="Under 13" onPress={() => onSelect("coach")} />
-      <Button title="Over 13" onPress={() => onSelect("coach")} />
+      <Button title="Guardian" onPress={() => onSelect("Guardian")} />
+      <Button title="Under 13" onPress={() => onSelect("Under-13")} />
+      <Button title="Over 13" onPress={() => onSelect("Over-13")} />
     </View>
   );
 }
