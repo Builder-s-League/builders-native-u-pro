@@ -47,7 +47,7 @@ const AuthScreen: React.FC = () => {
         const { error } = await signIn(email, password);
         if (error) throw error;
       } else {
-        const { error } = await signUp(email, password);
+        const { error } = await signUp(email, password, firstName, lastName);
         if (error) throw error;
         Alert.alert("Success", "Check your email for the confirmation link!");
       }

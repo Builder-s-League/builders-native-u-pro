@@ -6,7 +6,7 @@ type AuthContextType = {
 	user: User | null;
 	session: Session | null;
 	loading: boolean;
-	signUp: (email: string, password: string) => Promise<any>;
+	signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<any>;
 	signIn: (email: string, password: string) => Promise<any>;
 	signOut: () => Promise<any>;
 	resetPassword: (email: string) => Promise<any>;
@@ -30,14 +30,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
-		// Get initial session
 		supabase.auth.getSession().then(({ data: { session } }) => {
 			setSession(session);
 			setUser(session?.user ?? null);
 			setLoading(false);
 		});
 
-		// Listen for auth changes
 		const {
 			data: { subscription },
 		} = supabase.auth.onAuthStateChange((_event, session) => {
@@ -86,8 +84,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 	};
 
 	const resetPassword = async (email: string) => {
-		const result = await supabase.auth.resetPasswordForEmail(email);
-		return result;
+		try {
+			const { data: accountData, error: accountError } = await supabase
+				.from('accounts')
+				.select('id')
+				.eq('email', email.toLowerCase())
+				.single();
+
+			if (accountError || !accountData) {
+				return {
+					error: {
+						message: 'Email not found',
+					}
+				};
+			}
+
+			const result = await supabase.auth.resetPasswordForEmail(email);
+
+			return result;
+		} catch (error) {
+			return {
+				error: {
+					message: 'An error occurred. Please try again.',
+				}
+			};
+		}
 	};
 
 	const value = {
