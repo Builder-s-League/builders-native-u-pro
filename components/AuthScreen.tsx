@@ -1,16 +1,9 @@
 import React, { useState } from "react";
-import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View, Alert } from "react-native";
 import { useAuth } from "../contexts/AuthContext";
+import { router } from "expo-router"; 
 
-type AuthMode = "signin" | "signup" | "forgot";
+type AuthMode = "signin" | "signup";
 
 const AuthScreen: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -20,7 +13,7 @@ const AuthScreen: React.FC = () => {
   const [mode, setMode] = useState<AuthMode>("signin");
   const [loading, setLoading] = useState(false);
 
-  const { signIn, signUp, resetPassword } = useAuth();
+  const { signIn, signUp } = useAuth();
 
   const handleAuth = async () => {
     if (!email || !password) {
@@ -35,7 +28,7 @@ const AuthScreen: React.FC = () => {
         const { error } = await signIn(email, password);
         if (error) throw error;
       } else {
-        const { error } = await signUp(email, password, firstName, lastName);
+        const { error } = await signUp(email, password);
         if (error) throw error;
         Alert.alert("Success", "Check your email for the confirmation link!");
       }
@@ -43,21 +36,6 @@ const AuthScreen: React.FC = () => {
       Alert.alert("Error", error.message);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleResetPassword = async () => {
-    if (!email) {
-      Alert.alert("Error", "Please enter your email address");
-      return;
-    }
-
-    try {
-      const { error } = await resetPassword(email);
-      if (error) throw error;
-      Alert.alert("Success", "Check your email for the reset link!");
-    } catch (error: any) {
-      Alert.alert("Error", error.message);
     }
   };
 
@@ -83,6 +61,7 @@ const AuthScreen: React.FC = () => {
             autoCorrect={false}
           />
         </View>
+
         {mode === "signup" && (
           <>
             <View className="mb-6">
@@ -100,7 +79,7 @@ const AuthScreen: React.FC = () => {
               <Text className="mb-2 font-medium text-gray-700">Last Name</Text>
               <TextInput
                 className="px-4 py-3 text-gray-800 rounded-lg border border-gray-300"
-                placeholder="First Name"
+                placeholder="Last Name"
                 value={lastName}
                 onChangeText={setLastName}
                 autoCapitalize="none"
@@ -124,9 +103,7 @@ const AuthScreen: React.FC = () => {
         </View>
 
         <TouchableOpacity
-          className={`py-4 rounded-lg mb-4 ${
-            loading ? "bg-gray-400" : "bg-blue-600"
-          }`}
+          className={`py-4 rounded-lg mb-4 ${loading ? "bg-gray-400" : "bg-blue-600"}`}
           onPress={handleAuth}
           disabled={loading}
         >
@@ -147,45 +124,9 @@ const AuthScreen: React.FC = () => {
         </TouchableOpacity>
 
         {mode === "signin" && (
-          <TouchableOpacity className="py-2" onPress={() => setMode("forgot")}>
-            <Text className="text-center text-gray-600">
-              Forgot your password?
-            </Text>
+          <TouchableOpacity className="py-2" onPress={() => router.push("/forgot-password")}>
+            <Text className="text-center text-gray-600">Forgot your password?</Text>
           </TouchableOpacity>
-        )}
-
-
-		
-        {mode === "forgot" && (
-          <>
-            <Text className="mb-6 text-center text-lg text-gray-800 font-semibold">
-              Reset Your Password
-            </Text>
-
-            <TextInput
-              className="px-4 py-3 text-gray-800 rounded-lg border border-gray-300 mb-4"
-              placeholder="Enter your email"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-
-            <TouchableOpacity
-              className={`py-4 rounded-lg mb-4 ${loading ? "bg-gray-400" : "bg-blue-600"}`}
-              onPress={handleResetPassword}
-              disabled={loading}
-            >
-              <Text className="text-lg font-semibold text-center text-white">
-                {loading ? "Sending..." : "Send Reset Link"}
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => setMode("signin")}>
-              <Text className="text-center text-blue-600">Back to Sign In</Text>
-            </TouchableOpacity>
-          </>
         )}
       </View>
     </KeyboardAvoidingView>
