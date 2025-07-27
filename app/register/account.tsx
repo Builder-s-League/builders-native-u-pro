@@ -25,6 +25,7 @@ export default function AccountPage() {
 
   return (
     <View style={{ padding: 20 }}>
+      <View className="h-12" />
       {/* Title and Step Indicator */}
       <View className="mb-8">
         {/* Step Numbers */}

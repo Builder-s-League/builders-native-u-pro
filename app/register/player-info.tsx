@@ -33,6 +33,7 @@ export default function PlayerInfo() {
   return (
     <ScrollView style={{ padding: 20 }}>
       {/* Title and Step Indicator */}
+      <View className="h-12" />
       <View className="mb-8">
         {/* Step Numbers */}
         <View className="flex-row justify-center items-center space-x-8">
