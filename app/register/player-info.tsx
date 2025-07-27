@@ -1,3 +1,4 @@
+import LabeledInput from "@/components/LabeledInput";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
@@ -45,6 +46,36 @@ export default function PlayerInfo() {
           Player information
         </Text>
       </View>
+
+      <LabeledInput
+        label="Name"
+        placeholder="Enter name"
+        value={player.name}
+        onChange={(text) => setPlayer((p) => ({ ...p, name: text }))}
+      />
+      <LabeledInput
+        label="Date of Birth"
+        type="date"
+        value={player.birthDate}
+        placeholder="YYYY-MM-DD"
+        onChange={(val) => setPlayer((p) => ({ ...p, birthDate: val }))}
+      />
+
+      <LabeledInput
+        label="Gender"
+        type="select"
+        value={player.gender}
+        options={["Male", "Female", "Not to say"]}
+        placeholder="Select gender"
+        onChange={(val) => setPlayer((p) => ({ ...p, gender: val }))}
+      />
+
+      <LabeledInput
+        label="Experience"
+        placeholder="Experience description"
+        value={player.experience}
+        onChange={(text) => setPlayer((p) => ({ ...p, experience: text }))}
+      />
 
       <TextInput
         placeholder="Name"
