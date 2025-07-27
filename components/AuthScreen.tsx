@@ -1,4 +1,4 @@
-import { useRouter } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   Alert,
@@ -139,14 +139,13 @@ const AuthScreen: React.FC = () => {
         </TouchableOpacity>
 
         {mode === "signin" ? (
-          <TouchableOpacity
-            className="py-3 mb-4"
-            onPress={() => router.push("/register" as const)}
-          >
-            <Text className="font-medium text-center text-blue-600">
-              Don&#39;t have an account? Sign up
-            </Text>
-          </TouchableOpacity>
+          <>
+            <Link href="/register" asChild>
+              <TouchableOpacity>
+                <Text>Don&#39;t have an account? Sign up</Text>
+              </TouchableOpacity>
+            </Link>
+          </>
         ) : (
           <TouchableOpacity
             className="py-3 mb-4"
