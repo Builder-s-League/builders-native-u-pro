@@ -8,6 +8,7 @@ export interface Account {
   last_name: string;
   created_at: string; // ISO timestamp
   updated_at: string; // ISO timestamp
+  last_active_user_id: number;
 }
 
 export interface SubscriptionType {
@@ -41,6 +42,8 @@ export interface User {
   equipped_avatar_id: number | null;
   equipped_profile_banner_id: number | null;
   created_at: string; // ISO timestamp
+  status_preference: "online" | "dnd";
+  last_active: string; // ISO timestamp
 }
 
 export type FriendshipStatus = "pending" | "accepted" | "rejected" | "blocked";

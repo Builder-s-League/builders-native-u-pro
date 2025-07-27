@@ -44,7 +44,7 @@ export default function FriendList({
     loading,
     error,
     reset,
-  } = useFetch(() => getFriends(account.id));
+  } = useFetch(() => getFriends(account.last_active_user_id));
   if (loading) {
     return (
       <View className="flex-1 justify-center items-center">

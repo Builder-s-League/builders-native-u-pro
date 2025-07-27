@@ -5,9 +5,11 @@ import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+import { useFriendStatusContext } from "@/contexts/FriendStatusContext";
 
 export default function HomeScreen() {
   const { user, account, loading } = useAuth();
+  const { getStatus, onlineCount } = useFriendStatusContext();
 
   if (loading) {
     return (
@@ -46,7 +48,9 @@ export default function HomeScreen() {
             </View>
             <TouchableOpacity className="flex-row items-center gap-1">
               <FontAwesome5 name="user-friends" size={24} color="black" />
-              <Text className="text-lg font-semibold italic">COUNT</Text>
+              <Text className="text-lg font-semibold italic">
+                {onlineCount}
+              </Text>
             </TouchableOpacity>
           </View>
           <View className="w-full flex-1 flex items-center justify-center bg-white rounded-lg shadow-lg">
