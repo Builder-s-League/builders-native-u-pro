@@ -91,11 +91,11 @@ export const FriendStatusProvider: React.FC<{
         else if (diff <= recentThreshold) map[u.id] = "recently active";
         else map[u.id] = "offline";
       });
-      console.log("computed statusMap:", map);
+
       const newOnlineCount = Object.values(map).filter(
         (s) => s === "online"
       ).length;
-      console.log("computed onlineCount:", newOnlineCount);
+
       setStatusMap(map);
       setOnlineCount(newOnlineCount);
     };

@@ -4,6 +4,8 @@ import { supabase } from "@/lib/supabase";
 import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { getInitials } from "@/lib/utils";
+import { StatusDot } from "./StatusDot";
+import { FontAwesome5 } from "@expo/vector-icons";
 
 async function getFriends(userId: number, requestedCols: string | null = null) {
   // 1) grab all accepted friendships where this user is either requester or addressee
@@ -56,7 +58,25 @@ export default function FriendList({
   }
 
   if (!friends || friends.length === 0) {
-    return null;
+    return (
+      <View className="flex-1 flex-col w-full p-8 pb-16">
+        <TouchableOpacity
+          className="px-4 py-2 bg-gray-300 rounded-lg mb-4 self-end flex-row items-center justify-between gap-2"
+          onPress={toggleFriendMenu}
+        >
+          <Text className="text-gray-700">Close</Text>
+          <AntDesign name="right" size={16} color="black" />
+        </TouchableOpacity>
+
+        <Text className="text-xl font-bold mb-4">List of Friends</Text>
+        <View className="w-full items-center rounded-2xl bg-gray-100 p-8">
+          <FontAwesome5 name="user-friends" size={24} color="black" />
+          <Text className="mt-3 text-center text-lg">
+            There is no friend yet, Let make some friends 👋
+          </Text>
+        </View>
+      </View>
+    );
   }
 
   return (
@@ -81,18 +101,23 @@ export default function FriendList({
         renderItem={({ item }) => (
           <View className="border-b border-gray-200 w-full min-w-[200px] flex-row items-center pb-2">
             <View className="flex-1 flex-row items-center gap-2">
-              {item.profile_picture ? (
-                <Image
-                  source={{ uri: item.profile_picture }}
-                  className="w-14 h-14 rounded-full"
-                />
-              ) : (
-                <View className="w-14 h-14 bg-gray-300 rounded-full flex items-center justify-center">
-                  <Text className="text-center text-gray-500 text-2xl font-bold">
-                    {getInitials(item.name)}
-                  </Text>
+              <View className="relative">
+                {item.profile_picture ? (
+                  <Image
+                    source={{ uri: item.profile_picture }}
+                    className="w-14 h-14 rounded-full"
+                  />
+                ) : (
+                  <View className="w-14 h-14 bg-gray-300 rounded-full flex items-center justify-center">
+                    <Text className="text-center text-gray-500 text-2xl font-bold">
+                      {getInitials(item.name)}
+                    </Text>
+                  </View>
+                )}
+                <View className="absolute bottom-0 right-0">
+                  <StatusDot userId={item.id} sizeClass="w-4 h-4" />
                 </View>
-              )}
+              </View>
               <View className="flex-col flex-1 gap-1 h-14">
                 <Text className="text-lg font-semibold">{item.name}</Text>
                 <Text className="text-gray-600 max-w-[200px]" numberOfLines={1}>
