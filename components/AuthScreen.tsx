@@ -142,7 +142,9 @@ const AuthScreen: React.FC = () => {
           <>
             <Link href="/register" asChild>
               <TouchableOpacity>
-                <Text>Don&#39;t have an account? Sign up</Text>
+                <Text className="text-center text-gray-600">
+                  Don&#39;t have an account? Sign up
+                </Text>
               </TouchableOpacity>
             </Link>
           </>
