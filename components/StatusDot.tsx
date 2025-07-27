@@ -3,7 +3,7 @@ import React from "react";
 import { View } from "react-native";
 import { useFriendStatusContext } from "@/contexts/FriendStatusContext";
 
-const COLOR_CLASSES: Record<string, string> = {
+export const COLOR_CLASSES: Record<string, string> = {
   online: "bg-green-500",
   "recently active": "bg-yellow-400",
   offline: "bg-gray-400",

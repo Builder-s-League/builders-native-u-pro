@@ -1,11 +1,21 @@
 import useFetch from "@/hooks/useFetch";
 import { Account, User } from "@/interfaces/interfaces";
 import { supabase } from "@/lib/supabase";
-import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
+import {
+  FlatList,
+  Image,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { getInitials } from "@/lib/utils";
-import { StatusDot } from "./StatusDot";
+import { COLOR_CLASSES, StatusDot } from "./StatusDot";
 import { FontAwesome5 } from "@expo/vector-icons";
+import { useFriendStatusContext } from "@/contexts/FriendStatusContext";
+import { useMemo, useState } from "react";
+import { useActiveUser } from "@/contexts/ActiveUserContext";
 
 async function getFriends(userId: number, requestedCols: string | null = null) {
   // 1) grab all accepted friendships where this user is either requester or addressee
@@ -41,12 +51,43 @@ export default function FriendList({
   account: Account;
   toggleFriendMenu: () => void;
 }) {
-  const {
-    data: friends,
-    loading,
-    error,
-    reset,
-  } = useFetch(() => getFriends(account.last_active_user_id));
+  const { data: friends, loading } = useFetch(() =>
+    getFriends(account.last_active_user_id)
+  );
+
+  const { getStatus } = useFriendStatusContext();
+  const { activeUser } = useActiveUser();
+
+  // local state for search + filter
+  const [searchText, setSearchText] = useState("");
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "online" | "recently active" | "offline"
+  >("all");
+
+  // derive filtered list
+  const filtered = useMemo(() => {
+    if (!friends) return;
+    return friends.filter((f) => {
+      // name match
+      if (
+        searchText.length > 0 &&
+        !f.name.toLowerCase().includes(searchText.toLowerCase())
+      ) {
+        return false;
+      }
+      // status match
+      if (statusFilter !== "all" && getStatus(f.id) !== statusFilter) {
+        return false;
+      }
+      return true;
+    });
+  }, [friends, searchText, statusFilter, getStatus]);
+
+  const clearFilters = () => {
+    setSearchText("");
+    setStatusFilter("all");
+  };
+
   if (loading) {
     return (
       <View className="flex-1 justify-center items-center">
@@ -61,7 +102,7 @@ export default function FriendList({
     return (
       <View className="flex-1 flex-col w-full p-8 pb-16">
         <TouchableOpacity
-          className="px-4 py-2 bg-gray-300 rounded-lg mb-4 self-end flex-row items-center justify-between gap-2"
+          className="px-4 py-2 bg-gray-300 rounded-lg mb-4 self-end flex-row items-center justify-between gap-1"
           onPress={toggleFriendMenu}
         >
           <Text className="text-gray-700">Close</Text>
@@ -80,28 +121,113 @@ export default function FriendList({
   }
 
   return (
-    <View className="flex-1 flex-col w-full p-8 pb-16">
-      <TouchableOpacity
-        className="px-4 py-2 bg-gray-300 rounded-lg mb-4 self-end flex-row items-center justify-between gap-2"
-        onPress={toggleFriendMenu}
-      >
-        <Text className="text-gray-700">Close</Text>
-        <AntDesign name="right" size={16} color="black" />
-      </TouchableOpacity>
+    <View className="flex-1 w-full p-4 pb-8">
+      {/* Close button */}
+      <View className="flex-row items-center justify-between mb-4">
+        {activeUser && (
+          <View className="flex-row items-center">
+            <View className="mr-2">
+              {activeUser.profile_picture ? (
+                <Image
+                  source={{ uri: activeUser.profile_picture }}
+                  className="w-10 h-10 rounded-full"
+                />
+              ) : (
+                <View className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
+                  <Text className="text-xl font-bold text-gray-500">
+                    {getInitials(activeUser.name)}
+                  </Text>
+                </View>
+              )}
+            </View>
+            <Text className="text-lg">
+              Hi, <Text className="font-bold text-xl">{activeUser.name}! </Text>
+              👋
+            </Text>
+          </View>
+        )}
+        <TouchableOpacity
+          className="px-4 py-2 bg-gray-300 rounded-lg mb-4 flex-row items-center gap-1"
+          onPress={toggleFriendMenu}
+        >
+          <Text className="text-gray-700">Close</Text>
+          <AntDesign name="right" size={16} color="black" />
+        </TouchableOpacity>
+      </View>
 
-      <Text className="text-xl font-bold mb-4">List of Friends</Text>
+      {/* Search & clear */}
+      <View className="flex-row items-center mb-3 gap-2">
+        <View className="flex-1 flex-row items-center rounded-full h-10 bg-gray-200 px-3">
+          <AntDesign name="search1" size={24} color="gray" />
+          <TextInput
+            className="flex-1 py-2 h-10 ml-1"
+            placeholder="Search friends…"
+            value={searchText}
+            onChangeText={setSearchText}
+          />
+        </View>
+        <TouchableOpacity
+          onPress={clearFilters}
+          className="h-10 justify-center"
+        >
+          <Text>Cancel</Text>
+        </TouchableOpacity>
+      </View>
 
-      {error && (
-        <Text className="text-red-500 px-5 my-3">Error: {error.message}</Text>
+      {/* Status filter buttons */}
+      <View className="flex-row mb-4 gap-1">
+        {(["all", "online", "recently active", "offline"] as const).map(
+          (status) => {
+            let colorClass = COLOR_CLASSES[status];
+            return (
+              <TouchableOpacity
+                key={status}
+                onPress={() => setStatusFilter(status)}
+                className={`px-3 py-1 rounded-full border flex-row items-center ${
+                  statusFilter === status
+                    ? "bg-blue-500 border-blue-500"
+                    : "bg-white border-gray-300"
+                }`}
+              >
+                {status !== "all" && (
+                  <View
+                    className={`${colorClass} w-3 h-3 rounded-full mr-1`}
+                  ></View>
+                )}
+                <Text
+                  className={`text-sm ${
+                    statusFilter === status ? "text-white" : "text-gray-700"
+                  }`}
+                >
+                  {status === "all"
+                    ? "All"
+                    : status.charAt(0).toUpperCase() + status.slice(1)}
+                </Text>
+              </TouchableOpacity>
+            );
+          }
+        )}
+      </View>
+
+      {/* No results */}
+      {filtered && filtered.length === 0 && (
+        <View className="flex-1 items-center justify-center">
+          <AntDesign name="frowno" size={36} color="gray" />
+          <Text className="mt-2 text-gray-600 text-lg">
+            No friends match your filters.
+          </Text>
+        </View>
       )}
 
-      <FlatList
-        data={friends}
-        keyExtractor={(item: User) => item.id.toString()}
-        renderItem={({ item }) => (
-          <View className="border-b border-gray-200 w-full min-w-[200px] flex-row items-center pb-2">
-            <View className="flex-1 flex-row items-center gap-2">
-              <View className="relative">
+      {/* Friend list */}
+      {filtered && filtered.length > 0 && (
+        <FlatList
+          data={filtered}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <View className="flex-row items-center py-2 border-b border-gray-200">
+              {/* avatar + status */}
+              <View className="relative mr-3">
                 {item.profile_picture ? (
                   <Image
                     source={{ uri: item.profile_picture }}
@@ -109,35 +235,32 @@ export default function FriendList({
                   />
                 ) : (
                   <View className="w-14 h-14 bg-gray-300 rounded-full flex items-center justify-center">
-                    <Text className="text-center text-gray-500 text-2xl font-bold">
+                    <Text className="text-2xl font-bold text-gray-500">
                       {getInitials(item.name)}
                     </Text>
                   </View>
                 )}
                 <View className="absolute bottom-0 right-0">
-                  <StatusDot userId={item.id} sizeClass="w-4 h-4" />
+                  <StatusDot userId={item.id} sizeClass="w-3 h-3" />
                 </View>
               </View>
-              <View className="flex-col flex-1 gap-1 h-14">
+
+              {/* name & latest msg */}
+              <View className="flex-1">
                 <Text className="text-lg font-semibold">{item.name}</Text>
-                <Text className="text-gray-600 max-w-[200px]" numberOfLines={1}>
-                  {`HOLDER FOR LATEST MESSAGE`.slice(0, 40)}
+                <Text className="text-gray-600" numberOfLines={1}>
+                  {`(latest message)…`}
                 </Text>
               </View>
-            </View>
 
-            <TouchableOpacity
-              className="px-4 py-2 bg-blue-500 rounded-lg ml-2"
-              onPress={() => {
-                // Handle friend interaction, e.g., view profile or send message
-                console.log(`Interacting with ${item.name}`);
-              }}
-            >
-              <Text className="text-white">Message</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      />
+              {/* message button */}
+              <TouchableOpacity className="px-3 py-1 bg-blue-500 rounded-lg ml-2">
+                <Text className="text-white">Message</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        />
+      )}
     </View>
   );
 }
