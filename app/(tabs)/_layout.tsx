@@ -1,6 +1,6 @@
-import { Tabs } from "expo-router";
+import { Tabs, useSegments } from "expo-router";
 import React from "react";
-import { Platform } from "react-native";
+import { Platform, View } from "react-native";
 
 import { useAuth } from "@/contexts/AuthContext";
 import AuthScreen from "@/components/AuthScreen";
@@ -32,6 +32,9 @@ export default function TabLayout() {
   const { user: authUser } = useAuth();
   const colorScheme = useColorScheme();
 
+  const segments = useSegments() as string[];
+  const hideTabBar = segments.includes("chat");
+
   if (!authUser) return <AuthScreen />;
 
   return (
@@ -43,12 +46,22 @@ export default function TabLayout() {
             headerShown: false,
             tabBarButton: HapticTab,
             tabBarBackground: TabBarBackground,
-            tabBarStyle: Platform.select({
-              ios: { position: "absolute" },
-              default: {},
-            }),
+            tabBarStyle: {
+              display: hideTabBar ? "none" : "flex",
+              ...Platform.select({
+                ios: { position: "absolute" },
+                default: {},
+              }),
+            },
           }}
         >
+          <Tabs.Screen
+            name="chat/[userId]"
+            options={{
+              tabBarButton: () => null,
+              tabBarItemStyle: { display: "none" },
+            }}
+          />
           {navigations.map(({ name, title, icon }) => (
             <Tabs.Screen
               key={name}

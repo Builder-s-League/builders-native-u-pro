@@ -112,3 +112,11 @@ export interface StorePurchase {
   total_cost: number;
   purchased_at: string; // ISO timestamp
 }
+
+export interface ChatMessage {
+  id: number;
+  sender_id: number;
+  recipient_id: number;
+  content: string;
+  inserted_at: string;
+}

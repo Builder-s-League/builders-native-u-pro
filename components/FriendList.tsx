@@ -10,12 +10,14 @@ import {
   View,
 } from "react-native";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import { getInitials } from "@/lib/utils";
 import { COLOR_CLASSES, StatusDot } from "./StatusDot";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { useFriendStatusContext } from "@/contexts/FriendStatusContext";
 import { useMemo, useState } from "react";
 import { useActiveUser } from "@/contexts/ActiveUserContext";
+import { useRouter } from "expo-router";
+import Avatar from "./Avatar";
+import { useFriendSummaries } from "@/hooks/useLatestMessage";
 
 async function getFriends(userId: number, requestedCols: string | null = null) {
   // 1) grab all accepted friendships where this user is either requester or addressee
@@ -54,9 +56,16 @@ export default function FriendList({
   const { data: friends, loading } = useFetch(() =>
     getFriends(account.last_active_user_id)
   );
-
   const { getStatus } = useFriendStatusContext();
   const { activeUser } = useActiveUser();
+
+  // Build a simple array of friend IDs for the summary hook:
+  const friendIds = friends?.map((f) => f.id);
+
+  // This single hook gives you both “latest” and “unread” in one map:
+  const summaries = useFriendSummaries(friendIds || []);
+
+  const router = useRouter();
 
   // local state for search + filter
   const [searchText, setSearchText] = useState("");
@@ -126,20 +135,7 @@ export default function FriendList({
       <View className="flex-row items-center justify-between mb-4">
         {activeUser && (
           <View className="flex-row items-center">
-            <View className="mr-2">
-              {activeUser.profile_picture ? (
-                <Image
-                  source={{ uri: activeUser.profile_picture }}
-                  className="w-10 h-10 rounded-full"
-                />
-              ) : (
-                <View className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-                  <Text className="text-xl font-bold text-gray-500">
-                    {getInitials(activeUser.name)}
-                  </Text>
-                </View>
-              )}
-            </View>
+            <Avatar user={activeUser} size="sm" containerClass="mr-2" />
             <Text className="text-lg">
               Hi, <Text className="font-bold text-xl">{activeUser.name}! </Text>
               👋
@@ -224,41 +220,46 @@ export default function FriendList({
         <FlatList
           data={filtered}
           keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <View className="flex-row items-center py-2 border-b border-gray-200">
-              {/* avatar + status */}
-              <View className="relative mr-3">
-                {item.profile_picture ? (
-                  <Image
-                    source={{ uri: item.profile_picture }}
-                    className="w-14 h-14 rounded-full"
-                  />
-                ) : (
-                  <View className="w-14 h-14 bg-gray-300 rounded-full flex items-center justify-center">
-                    <Text className="text-2xl font-bold text-gray-500">
-                      {getInitials(item.name)}
-                    </Text>
+          renderItem={({ item }) => {
+            const { latest, unread = 0 } = summaries[item.id] || {};
+            return (
+              <View className="flex-row items-center py-2 border-b border-gray-200">
+                {/* avatar + status */}
+                <View className="relative mr-3">
+                  <Avatar user={item} size="md" />
+                  <View className="absolute bottom-0 right-0">
+                    <StatusDot userId={item.id} sizeClass="w-4 h-4" />
                   </View>
-                )}
-                <View className="absolute bottom-0 right-0">
-                  <StatusDot userId={item.id} sizeClass="w-3 h-3" />
                 </View>
-              </View>
 
-              {/* name & latest msg */}
-              <View className="flex-1">
-                <Text className="text-lg font-semibold">{item.name}</Text>
-                <Text className="text-gray-600" numberOfLines={1}>
-                  {`(latest message)…`}
-                </Text>
-              </View>
+                {/* name & latest msg */}
+                <View className="flex-1">
+                  <Text className="text-lg font-semibold">{item.name}</Text>
+                  <Text
+                    numberOfLines={1}
+                    style={{ fontWeight: unread > 0 ? "bold" : "normal" }}
+                  >
+                    {latest?.content ?? "No messages yet"}
+                  </Text>
+                </View>
 
-              {/* message button */}
-              <TouchableOpacity className="px-3 py-1 bg-blue-500 rounded-lg ml-2">
-                <Text className="text-white">Message</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+                {/* message button */}
+                <TouchableOpacity
+                  className="px-3 py-1 bg-blue-500 rounded-lg ml-2"
+                  onPress={() =>
+                    router.push({
+                      pathname: `/(tabs)/chat/[userId]`,
+                      params: {
+                        userId: item.id,
+                      },
+                    })
+                  }
+                >
+                  <Text className="text-white">Message</Text>
+                </TouchableOpacity>
+              </View>
+            );
+          }}
         />
       )}
     </View>

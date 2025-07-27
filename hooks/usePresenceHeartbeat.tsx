@@ -22,8 +22,6 @@ export function usePresenceHeartbeat(intervalMs = 60_000) {
     tick();
     // then every minute
     const iv = setInterval(tick, intervalMs);
-    console.log(intervalMs);
-    console.log("refresh user state");
     return () => {
       mounted = false;
       clearInterval(iv);
